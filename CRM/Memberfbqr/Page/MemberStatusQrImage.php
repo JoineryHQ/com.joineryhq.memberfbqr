@@ -22,13 +22,13 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
 
     // Send image headers (we're always called as the URL for an image).
     header('Content-Type: image/png');
-    header("X-memberfbqr-link-: $link");
 
     // Get settings.
     $fgColor = CRM_Memberfbqr_Utils_General::getSetting('fgColor');
     $bgColor = CRM_Memberfbqr_Utils_General::getSetting('bgColor');
     $afformName = CRM_Memberfbqr_Utils_General::getSetting('afformName');
     $memberIdParamName = CRM_Memberfbqr_Utils_General::getSetting('memberIdParamName');
+    $quietzoneSize = CRM_Memberfbqr_Utils_General::getSetting('quietzoneSize', 4);
 
     // If settings are incomplete, log error and sent an error image.
     if (empty($afformName) || empty($memberIdParamName)) {
@@ -87,7 +87,7 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
         // logo (requires a call to QRMatrix::setLogoSpace()), see QRImageWithLogo
         QRMatrix::M_LOGO => $bgColor,
       ],
-      'quietzoneSize' => 0,
+      'quietzoneSize' => $quietzoneSize,
     ]);
 
     $qr_code = new QRCode($options);
@@ -115,6 +115,9 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
       $link .= '#/?' . http_build_query($filters);
     }
     $qr_code_data = $qr_code->render($link);
+    // Send the raw URL in a header for easier debugging.
+    header("X-memberfbqr-link-: $link");
+    // Send the raw image data (image headers were sent above).
     echo($qr_code_data);
     exit;
   }

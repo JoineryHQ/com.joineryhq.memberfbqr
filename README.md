@@ -1,7 +1,15 @@
 # CiviCRM: Membership FormBuilder QR Code
 
-This extension provides unique functionality for a specific site. If you're not
-already using this extension, it probably has no value for you.
+Provides for dynamic creation of a QR code pointing to a configured "member info"
+FormBuilder form. This QR code is accessible through a CiviCRM token in the context
+of Memberships, suitable for inclusion on membership cards generated, for example,
+by the [Certificates](https://lab.civicrm.org/extensions/certificates) extension.
+
+## Optional features
+
+If the [FormBuilder hash filters](https://github.com/JoineryHQ/com.joineryhq.fbhash)
+extension is enabled, this extension will attemp to use its features to hash the
+destination URL before encoding it into the QR code.
 
 ## Functionality
 
@@ -32,6 +40,9 @@ $civicrm_setting['com.joineryhq.memberfbqr']['com.joineryhq.memberfbqr'] = [
   'fgColor' => [200, 36, 36],
   // foreground color for QR code, as an array of RGB values.
   'bgColor' => [255, 255, 255],
+  // QR "quiet zone" size (empty, bg-colored border around the QR body), in modules.
+  // If not specified, a value of '4' is used.
+  'quietzoneSize' => 4,
   // machine name of FormBuilder form for member status
   'afformName' => 'afsearchMembershipStatus',
   // name of URL query parameter for member id, when viewing FormBuilder form

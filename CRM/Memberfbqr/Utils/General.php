@@ -9,11 +9,11 @@ use CRM_Memberfbqr_ExtensionUtil as E;
  */
 class CRM_Memberfbqr_Utils_General {
 
-  public static function getSetting($settingName) {
+  public static function getSetting($settingName, $default = NULL) {
     if (!isset(Civi::$statics[__CLASS__]['extSettings'])) {
       Civi::$statics[__CLASS__]['extSettings'] = \Civi::settings()->get(E::LONG_NAME);
     }
-    return (Civi::$statics[__CLASS__]['extSettings'][$settingName] ?? NULL);
+    return (Civi::$statics[__CLASS__]['extSettings'][$settingName] ?? $default);
   }
 
 }
