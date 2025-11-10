@@ -13,15 +13,34 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
   private $membershipId;
   private $timestamp;
   private $hash;
-  private $maxAgeSeconds;
 
   const afformName = 'afsearchMembershipStatus';
 
-  public function run() {
-    $this->maxAgeSeconds = CRM_Memberfbqr_Utils_General::getSetting('qrUrlMaxAgeSeconds', 5);
+  private function _error($errorMessage) {
+    // Log an error in civicrm.
+    Civi::log()->error(E::SHORT_NAME . ": " . $errorMessage);
+    // Report the error in custom http header.
+    header("X-memberfbqr-error: " . $errorMessage);
+    // Send an error image.
+    $errorImagePath = E::path('img/error.png');
+    readfile($errorImagePath);
+    exit;
+  }
 
+  public function run() {
     // Send image headers (we're always called as the URL for an image).
     header('Content-Type: image/png');
+
+    // Set variables from query params.
+    $this->membershipId = CRM_Utils_Request::retrieve('m', 'String');
+    $this->timestamp = CRM_Utils_Request::retrieve('t', 'String');
+    $this->hash = CRM_Utils_Request::retrieve('h', 'String');
+
+    // This page needs to be publicly accessible, but not TOO public.
+    // A secure key (generated in the token membership.statusQrImageUrl) is in the url, and checked here.
+    if (!$this->_allowAccess()) {
+      $this->_error('Access denied. Validation failed.');
+    }
 
     // Get settings.
     $fgColor = CRM_Memberfbqr_Utils_General::getSetting('fgColor');
@@ -32,23 +51,9 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
 
     // If settings are incomplete, log error and sent an error image.
     if (empty($afformName) || empty($memberIdParamName)) {
-      Civi::log()->error(E::SHORT_NAME . ": Could not generate QR image; requires configuration of afformName and memberIdParamName settings.");
-      $errorImagePath = E::path('img/error.png');
-      readfile($errorImagePath);
-      exit;
+      $this->_error('Could not generate QR image; requires configuration of afformName and memberIdParamName settings.');
     }
     // If we're still here, continue processing.
-
-    // Set variables from query params.
-    $this->membershipId = CRM_Utils_Request::retrieve('m', 'String');
-    $this->timestamp = CRM_Utils_Request::retrieve('t', 'String');
-    $this->hash = CRM_Utils_Request::retrieve('h', 'String');
-
-    // This page needs to be publicly accessible, but not TOO public.
-    // A secure key (generated in the token membership.statusQrImageUrl) is in the url, and checked here.
-    if (!$this->_allowAccess()) {
-      CRM_Utils_System::permissionDenied();
-    }
 
     $scale = $this->_calculateScale();
 
@@ -150,7 +155,8 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
       if ($this->hash == self::_generateHash($this->membershipId, $this->timestamp)) {
         $currentTimestamp = time();
         $elapsedSeconds = ($currentTimestamp - $this->timestamp);
-        if ($elapsedSeconds < $this->maxAgeSeconds) {
+        $maxAgeSeconds = CRM_Memberfbqr_Utils_General::getSetting('qrUrlMaxAgeSeconds', 5);
+        if ($elapsedSeconds < $maxAgeSeconds) {
           return TRUE;
         }
       }
