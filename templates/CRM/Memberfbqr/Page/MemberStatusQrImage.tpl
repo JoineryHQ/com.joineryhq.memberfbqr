@@ -1,0 +1,1 @@
+(This template is not used; the relevant path URL returns a raw image.)

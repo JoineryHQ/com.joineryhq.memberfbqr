@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/memberfbqr/memberStatusQrImage</path>
+    <page_callback>CRM_Memberfbqr_Page_MemberStatusQrImage</page_callback>
+    <title>MemberStatusQrImage</title>
+    <access_callback>1</access_callback>
+  </item>
+</menu>
