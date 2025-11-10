@@ -41,7 +41,7 @@ function _memberfbqr_token_eval(\Civi\Token\Event\TokenValueEvent $e) {
 
     if ($hasMyToken['membership.statusQrImageUrl']) {
       $time = time();
-      $hash = CRM_Memberfbqr_Page_MemberStatusQrImage::generateHash($membershipId, $time);
+      $hash = CRM_Memberfbqr_Page_MemberStatusQrImage::_generateHash($membershipId, $time);
       $queryParams = [
         'm' => $membershipId,
         't' => $time,

@@ -50,11 +50,13 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
       CRM_Utils_System::permissionDenied();
     }
 
+    $scale = $this->_calculateScale();
+
     // If we're still here, go ahead and build the QR image.
     $options = new QROptions([
       'outputType' => QRGdImagePNG::GDIMAGE_PNG,
       // scale: even a version-1 qr will be > 290px at this scale (called for in our PDF design, which will CSS-force the image to 290px)
-      'scale' => 14,
+      'scale' => $scale,
       'imageBase64' => FALSE,
       'moduleValues' => [
         // finder dark (true)
@@ -145,7 +147,7 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
     // If we're still here, h and t are required query params.
     if ($this->hash && $this->timestamp) {
       // Validate the hash.
-      if ($this->hash == self::generateHash($this->membershipId, $this->timestamp)) {
+      if ($this->hash == self::_generateHash($this->membershipId, $this->timestamp)) {
         $currentTimestamp = time();
         $elapsedSeconds = ($currentTimestamp - $this->timestamp);
         if ($elapsedSeconds < $this->maxAgeSeconds) {
@@ -158,7 +160,23 @@ class CRM_Memberfbqr_Page_MemberStatusQrImage extends CRM_Core_Page {
     return FALSE;
   }
 
-  public static function generateHash($mid, $time = NULL) {
+  private function _calculateScale() {
+    // Mathematical considerations:
+    // QR version is auto-calculated by chillerlan library; version-1 QRs will be
+    // the smallest, so we'll assume v1 (21 modules wide). If data requires a higher
+    // QR version, images may be significantly larger.
+    $minimumMatrixWidth = CRM_Memberfbqr_Utils_General::getSetting('minimumMatrixWidth');
+
+    $scale = ceil($minimumMatrixWidth / 21);
+
+    if (is_null($scale) || (int) $scale < 4) {
+      $scale = 4;
+    }
+    $scale = (int) $scale;
+    return $scale;
+  }
+
+  public static function _generateHash($mid, $time = NULL) {
     if (is_null($time)) {
       $time = time();
     }

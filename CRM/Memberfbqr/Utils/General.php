@@ -13,7 +13,11 @@ class CRM_Memberfbqr_Utils_General {
     if (!isset(Civi::$statics[__CLASS__]['extSettings'])) {
       Civi::$statics[__CLASS__]['extSettings'] = \Civi::settings()->get(E::LONG_NAME);
     }
-    return (Civi::$statics[__CLASS__]['extSettings'][$settingName] ?? $default);
+    $ret = (Civi::$statics[__CLASS__]['extSettings'][$settingName]);
+    if (is_null(($ret) || $ret == '')) {
+      $ret = $default;
+    }
+    return $ret;
   }
 
 }
